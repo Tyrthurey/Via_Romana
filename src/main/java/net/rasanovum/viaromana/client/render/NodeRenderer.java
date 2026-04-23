@@ -16,6 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.phys.Vec3;
+import net.rasanovum.viaromana.CommonConfig;
 import net.rasanovum.viaromana.client.ColorUtil;
 import net.rasanovum.viaromana.client.data.ClientPathData;
 import net.rasanovum.viaromana.client.ClientConfigCache;
@@ -113,7 +114,7 @@ public class NodeRenderer {
         Vec3 cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
         Vec3 playerPos = player.position();
         
-        List<NodeRenderData> nodeDataList = gatherRenderData(clientLevel, playerPos, level.dimension());
+        List<NodeRenderData> nodeDataList = gatherRenderData(clientLevel, player, playerPos, level.dimension());
         
         BlockPos selectedNodePos = findAndSetSelectedNode(player, nodeDataList, level.dimension());
         updateAnimatedAlphas(selectedNodePos);
@@ -163,11 +164,11 @@ public class NodeRenderer {
     }
 
     // Gathers all visible nodes and pre-calculates their expensive data.
-    private static List<NodeRenderData> gatherRenderData(ClientLevel level, Vec3 playerPos, ResourceKey<Level> dimension) {
+    private static List<NodeRenderData> gatherRenderData(ClientLevel level, Player player, Vec3 playerPos, ResourceKey<Level> dimension) {
         List<NodeRenderData> dataList = new ArrayList<>();
         double searchRadius = RENDER_DISTANCE + FADE_BUFFER_DISTANCE;
 
-        if (PlayerData.isChartingPath(Minecraft.getInstance().player)) {
+        if (PlayerData.isChartingPath(player)) {
             ClientPathData.getInstance().getTemporaryNodes().stream()
                 .map(nodeData -> {
                     double adjY = RenderUtil.findSuitableYPosition(level, nodeData.pos(), 0.25f);
@@ -180,12 +181,21 @@ public class NodeRenderer {
 
         PathGraph graph = ClientPathData.getInstance().getGraph(dimension);
         if (graph != null) {
+            UUID playerId = player.getUUID();
+            int visitedColor = ColorUtil.parseHex(CommonConfig.visited_line_color);
+
             ClientPathData.getInstance().getNearbyNodes(BlockPos.containing(playerPos), searchRadius, false, dimension).stream()
                 .map(node -> {
                     BlockPos pos = BlockPos.of(node.getPos());
                     double adjY = RenderUtil.findSuitableYPosition(level, pos, 0.25f);
                     double dist = calculateDistanceToNodeBeamInternal(playerPos, pos, adjY);
-                    return new NodeRenderData(pos, dist, adjY, DEFAULT_BEAM_COLOR);
+
+                    int color = DEFAULT_BEAM_COLOR;
+                    if (ClientConfigCache.requireWalkedPath && node.hasVisited(playerId)) {
+                        color = visitedColor;
+                    }
+
+                    return new NodeRenderData(pos, dist, adjY, color);
                 })
                 .filter(data -> data.distance <= searchRadius)
                 .forEach(dataList::add);

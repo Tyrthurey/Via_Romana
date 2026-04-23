@@ -14,6 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Player;
 import net.rasanovum.viaromana.CommonConfig;
+import net.rasanovum.viaromana.client.ClientConfigCache;
 import net.rasanovum.viaromana.ViaRomana;
 import net.rasanovum.viaromana.client.FadeManager;
 import net.rasanovum.viaromana.client.HudMessageManager;
@@ -78,6 +79,7 @@ public class TeleportMapScreen extends Screen {
     private static final int DIRECTION_COLOR_RGB = 0xFFFFFF;
     private static int LINE_COLOR_BASE = 0xFFFFFF;
     private static int LINE_COLOR_UNDERGROUND = 0xFFFFFF;
+    private static int LINE_COLOR_VISITED = 0x3366FF;
     private static float LINE_OPACITY = 1.0f;
     //endregion
 
@@ -220,6 +222,7 @@ public class TeleportMapScreen extends Screen {
 
         LINE_COLOR_BASE = Color.decode(CommonConfig.line_colors.get(0)).getRGB();
         LINE_COLOR_UNDERGROUND = Color.decode(CommonConfig.line_colors.get(1)).getRGB();
+        LINE_COLOR_VISITED = Color.decode(CommonConfig.visited_line_color).getRGB();
         LINE_OPACITY = CommonConfig.line_opacity;
 
         updateAnimationProgress();
@@ -292,8 +295,14 @@ public class TeleportMapScreen extends Screen {
         DestinationResponseS2C.NodeNetworkInfo endInfo = networkNodeMap.get(endPos);
         boolean bothUnderground = startInfo.clearance > 0 && startInfo.clearance < 24 &&
                 endInfo != null && endInfo.clearance > 0 && endInfo.clearance < 24;
+        boolean bothVisited = ClientConfigCache.requireWalkedPath && startInfo.visited && (endInfo != null && endInfo.visited);
 
-        int color = bothUnderground ? LINE_COLOR_UNDERGROUND : LINE_COLOR_BASE;
+        int color;
+        if (bothVisited) {
+            color = LINE_COLOR_VISITED;
+        } else {
+            color = bothUnderground ? LINE_COLOR_UNDERGROUND : LINE_COLOR_BASE;
+        }
         color = applyLineAlpha(color);
 
         Optional<Point> endScreenPosOpt = worldToScreen(endPos);

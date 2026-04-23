@@ -21,4 +21,20 @@ public class ColorUtil {
         
         return (red << 16) | (green << 8) | blue;
     }
+
+    /**
+     * Parses a hexadecimal color string (e.g., "#3366ff" or "3366ff") into an integer.
+     * Defaults to white (0xFFFFFF) if the string is invalid.
+     */
+    public static int parseHex(String hex) {
+        if (hex == null || hex.isEmpty()) return 0xFFFFFF;
+        try {
+            if (hex.startsWith("#")) {
+                hex = hex.substring(1);
+            }
+            return Integer.parseInt(hex, 16);
+        } catch (NumberFormatException e) {
+            return 0xFFFFFF;
+        }
+    }
 }
