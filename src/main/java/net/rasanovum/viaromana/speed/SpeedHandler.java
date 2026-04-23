@@ -14,7 +14,11 @@ import net.rasanovum.viaromana.ViaRomana;
 import net.rasanovum.viaromana.init.StatInit;
 import net.rasanovum.viaromana.path.Node;
 import net.rasanovum.viaromana.path.PathGraph;
+import net.rasanovum.viaromana.storage.path.PathDataManager;
 import net.rasanovum.viaromana.util.VersionUtils;
+import net.rasanovum.viaromana.network.packets.NodeVisitedS2C;
+import net.rasanovum.viaromana.network.PacketRegistration;
+import dev.corgitaco.dataanchor.network.broadcast.PacketBroadcaster;
 //? if >=1.21 {
 import net.minecraft.advancements.AdvancementHolder;
 //?} else {
@@ -54,7 +58,14 @@ public class SpeedHandler {
 
         if (graph != null) {
             Optional<Node> nearestNode = graph.getNearestNode(player.blockPosition(), CommonConfig.node_distance_minimum);
-            nearNode = nearestNode.isPresent();
+            if (nearestNode.isPresent()) {
+                Node node = nearestNode.get();
+                if (node.addVisitedPlayer(player.getUUID())) {
+                    PathDataManager.markDirty((ServerLevel) player.level());
+                    PacketBroadcaster.S2C.sendToPlayer(new NodeVisitedS2C(node.getBlockPos(), System.currentTimeMillis(), player.level().dimension()), player);
+                }
+                nearNode = true;
+            }
         }
 
 //        net.rasanovum.viaromana.ViaRomana.LOGGER.info("Near Node: {}", nearNode);

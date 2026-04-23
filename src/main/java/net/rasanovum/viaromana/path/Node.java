@@ -4,14 +4,23 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.LongPredicate;
+
+import net.rasanovum.viaromana.CommonConfig;
+import net.rasanovum.viaromana.client.ClientConfigCache;
 
 public class Node {
 
@@ -35,6 +44,7 @@ public class Node {
     private final float quality;
     private final int clearance;
     private final LongSet connectedNodes = new LongOpenHashSet();
+    private final Map<UUID, Long> visitedPlayers = new HashMap<>();
     private DestinationInfo destinationInfo = null; // Null if not a destination
     //endregion
 
@@ -82,6 +92,25 @@ public class Node {
             addConnection(c);
         }
 
+        if (tag.contains("visitedPlayers", Tag.TAG_LIST)) {
+            ListTag visitedList = tag.getList("visitedPlayers", Tag.TAG_COMPOUND);
+            if (!visitedList.isEmpty()) {
+                for (int i = 0; i < visitedList.size(); i++) {
+                    CompoundTag entry = visitedList.getCompound(i);
+                    if (entry.hasUUID("uuid")) {
+                        visitedPlayers.put(entry.getUUID("uuid"), entry.getLong("ts"));
+                    }
+                }
+            } else {
+                // Fallback for old format (List of UUIDs as IntArrays)
+                visitedList = tag.getList("visitedPlayers", Tag.TAG_INT_ARRAY);
+                long now = System.currentTimeMillis();
+                for (int i = 0; i < visitedList.size(); i++) {
+                    visitedPlayers.put(NbtUtils.loadUUID(visitedList.get(i)), now);
+                }
+            }
+        }
+
         if (tag.contains("destination", Tag.TAG_COMPOUND)) {
             CompoundTag destTag = tag.getCompound("destination");
             DestinationInfo dest = getOrCreateDestinationInfo();
@@ -104,6 +133,17 @@ public class Node {
         tag.putLong("pos", this.pos);
         tag.putByte("clearance", (byte) (this.clearance & 0xFF));
         tag.putLongArray("connections", this.connectedNodes.toLongArray());
+
+        if (!this.visitedPlayers.isEmpty()) {
+            ListTag visitedList = new ListTag();
+            for (Map.Entry<UUID, Long> entry : this.visitedPlayers.entrySet()) {
+                CompoundTag entryTag = new CompoundTag();
+                entryTag.putUUID("uuid", entry.getKey());
+                entryTag.putLong("ts", entry.getValue());
+                visitedList.add(entryTag);
+            }
+            tag.put("visitedPlayers", visitedList);
+        }
 
         if (this.destinationInfo != null) {
             CompoundTag destTag = new CompoundTag();
@@ -228,6 +268,40 @@ public class Node {
             case DESTINATION -> true;
             case PRIVATE -> Objects.equals(playerId, destinationInfo.privateOwner);
         };
+    }
+
+    public boolean addVisitedPlayer(UUID playerId) {
+        return addVisitedPlayerCustom(playerId, System.currentTimeMillis());
+    }
+
+    public boolean addVisitedPlayerCustom(UUID playerId, long timestamp) {
+        Long oldTs = visitedPlayers.put(playerId, timestamp);
+        
+        if (oldTs == null) return true;
+        
+        // If it was already visited, but it was decayed, we should mark as dirty to save the new visit
+        if (ClientConfigCache.visitedNodeDecayTime > 0) {
+            long decayMillis = (long) ClientConfigCache.visitedNodeDecayTime * 60 * 1000;
+            if (timestamp - oldTs > decayMillis) return true;
+        }
+
+        // Also mark as dirty if the timestamp is old enough that we want to refresh it on disk
+        // Refresh every 5 minutes if they are standing on it
+        return (timestamp - oldTs > 5 * 60 * 1000);
+    }
+
+    public boolean hasVisited(UUID playerId) {
+        Long timestamp = visitedPlayers.get(playerId);
+        if (timestamp == null) return false;
+        
+        if (ClientConfigCache.visitedNodeDecayTime <= 0) return true;
+        
+        long decayMillis = (long) ClientConfigCache.visitedNodeDecayTime * 60 * 1000;
+        return (System.currentTimeMillis() - timestamp) < decayMillis;
+    }
+
+    public Set<UUID> getVisitedPlayers() {
+        return Collections.unmodifiableSet(visitedPlayers.keySet());
     }
     //endregion
 
