@@ -79,7 +79,9 @@ public class PathSyncUtils {
                 CommonConfig.node_distance_minimum,
                 CommonConfig.node_distance_maximum,
                 CommonConfig.node_utility_distance,
-                CommonConfig.infrastructure_check_radius
+                CommonConfig.infrastructure_check_radius,
+                CommonConfig.require_walked_path,
+                CommonConfig.visited_node_decay_time
             );
             PacketBroadcaster.S2C.sendToPlayer(packet, player);
             
@@ -99,7 +101,9 @@ public class PathSyncUtils {
                 CommonConfig.node_distance_minimum,
                 CommonConfig.node_distance_maximum,
                 CommonConfig.node_utility_distance,
-                CommonConfig.infrastructure_check_radius
+                CommonConfig.infrastructure_check_radius,
+                CommonConfig.require_walked_path,
+                CommonConfig.visited_node_decay_time
             );
 
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {

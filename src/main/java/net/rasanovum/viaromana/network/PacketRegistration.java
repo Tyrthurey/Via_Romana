@@ -33,5 +33,6 @@ public class PacketRegistration {
         PacketRegistrar.register(S2C_CONTAINER, "teleport_fade_s2c", TeleportFadeS2C.class, TeleportFadeS2C::write, TeleportFadeS2C::new, TeleportFadeS2C::handle);
         PacketRegistrar.register(S2C_CONTAINER, "sign_validation_response_s2c", SignValidationResponseS2C.class, SignValidationResponseS2C::write, SignValidationResponseS2C::new, SignValidationResponseS2C::handle);
         PacketRegistrar.register(S2C_CONTAINER, "destination_response_s2c", DestinationResponseS2C.class, DestinationResponseS2C::write, DestinationResponseS2C::new, DestinationResponseS2C::handle);
+        PacketRegistrar.register(S2C_CONTAINER, "node_visited_s2c", NodeVisitedS2C.class, NodeVisitedS2C::write, NodeVisitedS2C::new, NodeVisitedS2C::handle);
     }
 }

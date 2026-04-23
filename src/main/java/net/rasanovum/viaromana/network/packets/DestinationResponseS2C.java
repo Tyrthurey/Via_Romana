@@ -88,23 +88,27 @@ public record DestinationResponseS2C(
         public final BlockPos position;
         public final float clearance;
         public final List<BlockPos> connections;
+        public final boolean visited;
 
-        public NodeNetworkInfo(BlockPos position, float clearance, List<BlockPos> connections) {
+        public NodeNetworkInfo(BlockPos position, float clearance, List<BlockPos> connections, boolean visited) {
             this.position = position;
             this.clearance = clearance;
             this.connections = connections;
+            this.visited = visited;
         }
 
         public NodeNetworkInfo(FriendlyByteBuf buf) {
             this.position = buf.readBlockPos();
             this.clearance = buf.readFloat();
             this.connections = buf.readList(b -> b.readBlockPos());
+            this.visited = buf.readBoolean();
         }
 
         public void write(FriendlyByteBuf buf) {
             buf.writeBlockPos(position);
             buf.writeFloat(clearance);
             buf.writeCollection(connections, (b, pos) -> b.writeBlockPos(pos));
+            buf.writeBoolean(visited);
         }
     }
 }
