@@ -51,6 +51,7 @@ public class ViaRomana {
         DataInit.load();
 
         MidnightConfig.init(MODID, CommonConfig.class);
+        net.rasanovum.viaromana.client.ClientConfigCache.updateFromCommonConfig();
 
         ServerResourcesGenerator generator = new ServerResourcesGenerator(DYNAMIC_PACK);
         generator.register();

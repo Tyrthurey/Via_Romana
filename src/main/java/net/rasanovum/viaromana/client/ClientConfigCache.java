@@ -23,4 +23,14 @@ public class ClientConfigCache {
         requireWalkedPath = requireWalked;
         visitedNodeDecayTime = decayTime;
     }
+
+    public static void updateFromCommonConfig() {
+        pathQualityThreshold = CommonConfig.path_quality_threshold;
+        nodeDistanceMinimum = CommonConfig.node_distance_minimum;
+        nodeDistanceMaximum = CommonConfig.node_distance_maximum;
+        nodeUtilityDistance = CommonConfig.node_utility_distance;
+        infrastructureCheckRadius = CommonConfig.infrastructure_check_radius;
+        requireWalkedPath = CommonConfig.require_walked_path;
+        visitedNodeDecayTime = CommonConfig.visited_node_decay_time;
+    }
 }

@@ -66,6 +66,7 @@ public class CommonConfig extends MidnightConfig {
     @Override
     public void writeChanges() {
         super.writeChanges();
+        net.rasanovum.viaromana.client.ClientConfigCache.updateFromCommonConfig();
         ViaRomana.LOGGER.info("Via Romana config saved. Use /reload to update state");
         //TODO: Update relevant systems using a diff check (or similar)
     }

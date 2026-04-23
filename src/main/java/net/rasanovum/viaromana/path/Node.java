@@ -275,19 +275,32 @@ public class Node {
     }
 
     public boolean addVisitedPlayerCustom(UUID playerId, long timestamp) {
-        Long oldTs = visitedPlayers.put(playerId, timestamp);
-        
-        if (oldTs == null) return true;
-        
-        // If it was already visited, but it was decayed, we should mark as dirty to save the new visit
-        if (ClientConfigCache.visitedNodeDecayTime > 0) {
-            long decayMillis = (long) ClientConfigCache.visitedNodeDecayTime * 60 * 1000;
-            if (timestamp - oldTs > decayMillis) return true;
+        Long oldTs = visitedPlayers.get(playerId);
+
+        if (oldTs == null) {
+            visitedPlayers.put(playerId, timestamp);
+            return true;
         }
 
-        // Also mark as dirty if the timestamp is old enough that we want to refresh it on disk
-        // Refresh every 5 minutes if they are standing on it
-        return (timestamp - oldTs > 5 * 60 * 1000);
+        long diff = timestamp - oldTs;
+
+        // Configuration-driven update interval
+        long decayMinutes = ClientConfigCache.visitedNodeDecayTime;
+        long updateIntervalMillis;
+
+        if (decayMinutes > 5 || decayMinutes <= 0) {
+            updateIntervalMillis = 5 * 60 * 1000; // Default to 5 minutes
+        } else {
+            // updates at half the decay time if decay is less than or equal to 5 minutes with a 30 second minimum duration
+            updateIntervalMillis = Math.max(30 * 1000, (decayMinutes * 60 * 1000) / 2);
+        }
+
+        if (diff > updateIntervalMillis) {
+            visitedPlayers.put(playerId, timestamp);
+            return true;
+        }
+
+        return false;
     }
 
     public boolean hasVisited(UUID playerId) {
