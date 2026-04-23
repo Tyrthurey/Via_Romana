@@ -1,6 +1,7 @@
 package net.rasanovum.viaromana.util;
 
 import net.rasanovum.viaromana.CommonConfig;
+import net.rasanovum.viaromana.client.ClientConfigCache;
 import net.rasanovum.viaromana.storage.player.PlayerData;
 import net.rasanovum.viaromana.tags.TagGenerator;
 import net.minecraft.world.level.block.state.BlockState;
@@ -23,7 +24,17 @@ public class PathUtils {
         return (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
+    public static boolean isPositionOutsideLimit(LevelAccessor world, double x, double z) {
+        int limitRadius = world.isClientSide() ? ClientConfigCache.pathingLimitRadius : CommonConfig.pathing_limit_radius;
+        if (limitRadius <= 0) return false;
+        return x * x + z * z > (double) limitRadius * limitRadius;
+    }
+
     public static boolean isBlockValidPath(LevelAccessor world, BlockPos targetBlock) {
+        if (isPositionOutsideLimit(world, targetBlock.getX(), targetBlock.getZ())) {
+            return false;
+        }
+
         if (world.isEmptyBlock(targetBlock)) return false;
 
         BlockState blockState = world.getBlockState(targetBlock);

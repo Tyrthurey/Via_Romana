@@ -43,6 +43,11 @@ public final class ChartingHandler {
             return;
         }
 
+        if (PathUtils.isPositionOutsideLimit(level, entity.getX(), entity.getZ())) {
+            HudMessageManager.queueMessage("message.via_romana.outside_pathing_area");
+            return;
+        }
+
         if (infrastructureQuality < ClientConfigCache.pathQualityThreshold) {
             float threshold = ClientConfigCache.pathQualityThreshold;
             int areaCheck = (ClientConfigCache.infrastructureCheckRadius * 2) + 1;

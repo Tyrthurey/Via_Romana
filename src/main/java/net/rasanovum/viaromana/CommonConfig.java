@@ -28,6 +28,7 @@ public class CommonConfig extends MidnightConfig {
     @Entry(category = CHARTING) public static boolean no_gui_charting = false;
     @Entry(category = CHARTING) public static boolean require_walked_path = true;
     @Entry(category = CHARTING, min = 0) public static int visited_node_decay_time = 0; // In minutes, 0 = no decay
+    @Entry(category = CHARTING, min = 0) public static int pathing_limit_radius = 0; // Distance from 0,0, 0 = disabled
     @Comment(category = CHARTING) public static Comment charting_footer;
 
     @Entry(category = WARP) public static List<String> invalid_entities = Lists.newArrayList();

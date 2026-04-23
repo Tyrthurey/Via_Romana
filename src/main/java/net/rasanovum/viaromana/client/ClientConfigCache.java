@@ -13,8 +13,9 @@ public class ClientConfigCache {
     public static int infrastructureCheckRadius = CommonConfig.infrastructure_check_radius;
     public static boolean requireWalkedPath = CommonConfig.require_walked_path;
     public static int visitedNodeDecayTime = CommonConfig.visited_node_decay_time;
+    public static int pathingLimitRadius = CommonConfig.pathing_limit_radius;
 
-    public static void updateFromServer(float pathQuality, int nodeMin, int nodeMax, int utilityDist, int infraRadius, boolean requireWalked, int decayTime) {
+    public static void updateFromServer(float pathQuality, int nodeMin, int nodeMax, int utilityDist, int infraRadius, boolean requireWalked, int decayTime, int limitRadius) {
         pathQualityThreshold = pathQuality;
         nodeDistanceMinimum = nodeMin;
         nodeDistanceMaximum = nodeMax;
@@ -22,6 +23,7 @@ public class ClientConfigCache {
         infrastructureCheckRadius = infraRadius;
         requireWalkedPath = requireWalked;
         visitedNodeDecayTime = decayTime;
+        pathingLimitRadius = limitRadius;
     }
 
     public static void updateFromCommonConfig() {
@@ -32,5 +34,6 @@ public class ClientConfigCache {
         infrastructureCheckRadius = CommonConfig.infrastructure_check_radius;
         requireWalkedPath = CommonConfig.require_walked_path;
         visitedNodeDecayTime = CommonConfig.visited_node_decay_time;
+        pathingLimitRadius = CommonConfig.pathing_limit_radius;
     }
 }

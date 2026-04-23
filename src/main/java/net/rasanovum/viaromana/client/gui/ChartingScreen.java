@@ -82,6 +82,7 @@ public class ChartingScreen extends Screen {
     private int textBoundsTopY, textBoundsHeight;
     private boolean isNearNode = false;
     private boolean hasGoodInfrastructure = false;
+    private boolean isOutsideLimit = false;
     private float currentInfrastructureQuality = 0.0f;
 
     public ChartingScreen(Component title) {
@@ -394,6 +395,7 @@ public class ChartingScreen extends Screen {
         this.currentInfrastructureQuality = PathUtils.calculateInfrastructureQuality(minecraft.level, minecraft.player);
         float threshold = ClientConfigCache.pathQualityThreshold;
         this.hasGoodInfrastructure = this.currentInfrastructureQuality >= threshold;
+        this.isOutsideLimit = PathUtils.isPositionOutsideLimit(minecraft.level, minecraft.player.getX(), minecraft.player.getZ());
     }
     // endregion
 
@@ -438,7 +440,7 @@ public class ChartingScreen extends Screen {
 
         severPathButton.setDisabled(!isIdle || !isNearNode);
         deleteBranchButton.setDisabled(!isIdle || !isNearNode);
-        chartStartButton.setDisabled(!isIdle || !hasGoodInfrastructure);
+        chartStartButton.setDisabled(!isIdle || !hasGoodInfrastructure || isOutsideLimit);
 
         updateTooltips();
     }
@@ -457,7 +459,12 @@ public class ChartingScreen extends Screen {
             deleteBranchButton.setTooltip(Component.translatable("gui.viaromana.delete_branch_tooltip"));
         }
 
-        if (!hasGoodInfrastructure) {
+        if (isOutsideLimit) {
+            chartStartButton.setTooltips(
+                getChartStartTooltip(),
+                Component.translatable("message.via_romana.outside_pathing_area")
+            );
+        } else if (!hasGoodInfrastructure) {
             float threshold = ClientConfigCache.pathQualityThreshold;
             int areaCheck = (ClientConfigCache.infrastructureCheckRadius * 2) + 1;
             areaCheck = areaCheck * areaCheck;

@@ -28,6 +28,7 @@
   "message.via_romana.unsafe": "Cannot warp to an unsafe destination",
   "message.via_romana.path_not_walked": "You haven't walked this entire path yet",
 
+  "message.via_romana.outside_pathing_area": "You have ventured beyond the sanctioned charting boundaries",
   "gui.viaromana.left_click_hover_tip": "Left-click to open Travel Map",
 
   "toast.viaromana.linked_sign_hint.title": "Linked Sign",
@@ -127,6 +128,8 @@
   "via_romana.midnightconfig.node_utility_distance.tooltip": "The distance (in blocks) to select the nearest node from for actions like connect, sever, and delete.\n • Server Managed",
   "via_romana.midnightconfig.visited_node_decay_time": "Visited Node Decay Time",
   "via_romana.midnightconfig.visited_node_decay_time.tooltip": "The time (in minutes) after which a visited node is forgotten by the player (0 = no decay).\n • Server Managed",
+  "via_romana.midnightconfig.pathing_limit_radius": "Pathing Radius Limit",
+  "via_romana.midnightconfig.pathing_limit_radius.tooltip": "The maximum distance (in blocks) from the world origin (0,0) where pathing is allowed (0 = disabled).\n • Server Managed",
   "via_romana.midnightconfig.require_walked_path": "Require Walked Path",
   "via_romana.midnightconfig.require_walked_path.tooltip": "When enabled, players must physically walk along a charted path before they can use warp signs along it.\n • Server Managed",
   "via_romana.midnightconfig.visited_line_color": "Visited Path Color",

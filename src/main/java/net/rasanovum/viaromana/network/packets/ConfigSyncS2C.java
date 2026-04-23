@@ -10,7 +10,7 @@ import net.rasanovum.viaromana.network.AbstractPacket;
 /**
  * Server-to-client packet to synchronize server config values to the client.
  */
-public record ConfigSyncS2C(float pathQualityThreshold, int nodeDistanceMin, int nodeDistanceMax, int nodeUtilityDistance, int infrastructureCheckRadius, boolean requireWalkedPath, int visitedNodeDecayTime) implements AbstractPacket {
+public record ConfigSyncS2C(float pathQualityThreshold, int nodeDistanceMin, int nodeDistanceMax, int nodeUtilityDistance, int infrastructureCheckRadius, boolean requireWalkedPath, int visitedNodeDecayTime, int pathingLimitRadius) implements AbstractPacket {
 
     public ConfigSyncS2C(FriendlyByteBuf buf) {
         this(
@@ -20,6 +20,7 @@ public record ConfigSyncS2C(float pathQualityThreshold, int nodeDistanceMin, int
             buf.readInt(),
             buf.readInt(),
             buf.readBoolean(),
+            buf.readInt(),
             buf.readInt()
         );
     }
@@ -32,16 +33,17 @@ public record ConfigSyncS2C(float pathQualityThreshold, int nodeDistanceMin, int
         buf.writeInt(this.infrastructureCheckRadius);
         buf.writeBoolean(this.requireWalkedPath);
         buf.writeInt(this.visitedNodeDecayTime);
+        buf.writeInt(this.pathingLimitRadius);
     }
 
     public void handle(Level level, Player player) {
         if (level.isClientSide) {
             ClientConfigCache.updateFromServer(
-                this.pathQualityThreshold, this.nodeDistanceMin, this.nodeDistanceMax, this.nodeUtilityDistance, this.infrastructureCheckRadius, this.requireWalkedPath, this.visitedNodeDecayTime
+                this.pathQualityThreshold, this.nodeDistanceMin, this.nodeDistanceMax, this.nodeUtilityDistance, this.infrastructureCheckRadius, this.requireWalkedPath, this.visitedNodeDecayTime, this.pathingLimitRadius
             );
             
-            ViaRomana.LOGGER.debug("Received config sync from server: pathQuality={}, nodeMin={}, nodeMax={}, utility={}, infraRadius={}, requireWalked={}, decayTime={}",
-                this.pathQualityThreshold, this.nodeDistanceMin, this.nodeDistanceMax, this.nodeUtilityDistance, this.infrastructureCheckRadius, this.requireWalkedPath, this.visitedNodeDecayTime);
+            ViaRomana.LOGGER.debug("Received config sync from server: pathQuality={}, nodeMin={}, nodeMax={}, utility={}, infraRadius={}, requireWalked={}, decayTime={}, limitRadius={}",
+                this.pathQualityThreshold, this.nodeDistanceMin, this.nodeDistanceMax, this.nodeUtilityDistance, this.infrastructureCheckRadius, this.requireWalkedPath, this.visitedNodeDecayTime, this.pathingLimitRadius);
         }
     }
 }
