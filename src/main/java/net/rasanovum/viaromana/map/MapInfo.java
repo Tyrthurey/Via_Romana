@@ -63,12 +63,7 @@ public record MapInfo(
 
         buffer.writeInt(networkNodes.size());
         for (NodeNetworkInfo node : networkNodes) {
-            buffer.writeBlockPos(node.position);
-            buffer.writeFloat(node.clearance);
-            buffer.writeInt(node.connections.size());
-            for (BlockPos connection : node.connections) {
-                buffer.writeBlockPos(connection);
-            }
+            node.write(buffer);
         }
 
         if (hasImageData()) {
@@ -109,14 +104,7 @@ public record MapInfo(
         int nodeCount = buffer.readInt();
         List<NodeNetworkInfo> networkNodes = new ArrayList<>(nodeCount);
         for (int i = 0; i < nodeCount; i++) {
-            BlockPos nodePos = buffer.readBlockPos();
-            float clearance = buffer.readFloat();
-            int connectionCount = buffer.readInt();
-            List<BlockPos> connections = new ArrayList<>(connectionCount);
-            for (int j = 0; j < connectionCount; j++) {
-                connections.add(buffer.readBlockPos());
-            }
-            networkNodes.add(new NodeNetworkInfo(nodePos, clearance, connections));
+            networkNodes.add(new NodeNetworkInfo(buffer));
         }
 
         // Read raw pixel data and world coordinates
