@@ -26,6 +26,8 @@ public class CommonConfig extends MidnightConfig {
     @Entry(category = CHARTING) public static List<String> block_string_blacklist = Lists.newArrayList("diagonalwalls:", "diagonalfences:", "diagonalwindows:");
     @Entry(category = CHARTING) public static List<String> invalid_dimensions = Lists.newArrayList();
     @Entry(category = CHARTING) public static boolean no_gui_charting = false;
+    @Entry(category = CHARTING) public static boolean require_walked_path = true;
+    @Entry(category = CHARTING, min = 0) public static int visited_node_decay_time = 0; // In minutes, 0 = no decay
     @Comment(category = CHARTING) public static Comment charting_footer;
 
     @Entry(category = WARP) public static List<String> invalid_entities = Lists.newArrayList();
@@ -53,6 +55,7 @@ public class CommonConfig extends MidnightConfig {
     @Entry(category = VISUALS, min = 0f, max = 1f) public static float biome_map_opacity = 0.3f;
     @Entry(category = VISUALS, min = 0f, max = 1f) public static float node_vignette_opacity = 1.0f;
     @Entry(category = VISUALS, isColor = true) public static List<String> line_colors = Lists.newArrayList("#ffffff", "#cccccc");
+    @Entry(category = VISUALS, isColor = true) public static String visited_line_color = "#3366ff";
     @Entry(category = VISUALS, min = 0f, max = 1f) public static float line_opacity = 1.0f;
     @Entry(category = VISUALS) public static boolean enable_teleport_particles = true;
     @Entry(category = VISUALS) public static boolean enable_sign_particles = true;

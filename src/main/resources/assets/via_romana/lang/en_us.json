@@ -26,6 +26,7 @@
   "message.via_romana.cannot_warp_when_recording": "Cannot warp while charting",
   "message.via_romana.entity_not_allowed": "Warping with current entity not allowed",
   "message.via_romana.unsafe": "Cannot warp to an unsafe destination",
+  "message.via_romana.path_not_walked": "You haven't walked this entire path yet",
 
   "gui.viaromana.left_click_hover_tip": "Left-click to open Travel Map",
 
@@ -124,6 +125,12 @@
   "via_romana.midnightconfig.node_distance_maximum.tooltip": "The maximum distance (in blocks) between two nodes.\n • Server Managed",
   "via_romana.midnightconfig.node_utility_distance": "Node Utility Distance",
   "via_romana.midnightconfig.node_utility_distance.tooltip": "The distance (in blocks) to select the nearest node from for actions like connect, sever, and delete.\n • Server Managed",
+  "via_romana.midnightconfig.visited_node_decay_time": "Visited Node Decay Time",
+  "via_romana.midnightconfig.visited_node_decay_time.tooltip": "The time (in minutes) after which a visited node is forgotten by the player (0 = no decay).\n • Server Managed",
+  "via_romana.midnightconfig.require_walked_path": "Require Walked Path",
+  "via_romana.midnightconfig.require_walked_path.tooltip": "When enabled, players must physically walk along a charted path before they can use warp signs along it.\n • Server Managed",
+  "via_romana.midnightconfig.visited_line_color": "Visited Path Color",
+  "via_romana.midnightconfig.visited_line_color.tooltip": "The color of the path on the map for nodes the player has visited.\n • Client Managed",
   "via_romana.midnightconfig.path_quality_threshold": "Path Quality Threshold",
   "via_romana.midnightconfig.path_quality_threshold.tooltip": "Minimum percentage of valid infrastructure blocks required to place a node (eg. 0.3 = 30%% of a 2D slice of area check).\n • Server Managed",
   "via_romana.midnightconfig.travel_fatigue_cooldown": "Travel Fatigue Cooldown",
