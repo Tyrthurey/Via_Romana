@@ -19,6 +19,7 @@ import net.rasanovum.viaromana.ViaRomana;
 import net.rasanovum.viaromana.init.StatInit;
 import net.rasanovum.viaromana.map.ServerMapCache;
 import net.rasanovum.viaromana.network.AbstractPacket;
+import net.rasanovum.viaromana.path.Node;
 import net.rasanovum.viaromana.path.Node.NodeData;
 import net.rasanovum.viaromana.path.PathGraph;
 import net.rasanovum.viaromana.storage.path.PathDataManager;
@@ -85,7 +86,11 @@ public record ChartedPathC2S(List<NodeData> chartedNodes) implements AbstractPac
 
                 serverPlayer.awardStat(Stats.CUSTOM.get(StatInit.DISTANCE_CHARTED), (int) (totalDistance * 100));
                 
-                graph.createConnectedPath(this.chartedNodes);
+                List<Node> createdNodes = graph.createConnectedPath(this.chartedNodes);
+                for (Node node : createdNodes) {
+                    node.addVisitedPlayer(playerUUID);
+                }
+
                 PathDataManager.markDirty(serverLevel);
                 PathSyncUtils.syncPathGraphToAllPlayers(serverLevel);
                 awardChartingAdvancements(serverPlayer);

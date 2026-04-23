@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.ChunkPos;
 import net.rasanovum.viaromana.CommonConfig;
+import net.rasanovum.viaromana.client.ClientConfigCache;
 import net.rasanovum.viaromana.ViaRomana;
 import net.rasanovum.viaromana.map.ServerMapCache;
 import net.rasanovum.viaromana.map.ServerMapUtils;
@@ -61,21 +62,21 @@ public final class PathGraph {
             }
         }
 
-        public List<DestinationResponseS2C.NodeNetworkInfo> getNodesAsInfo(Long2IntOpenHashMap posToIndex, ObjectArrayList<Node> allNodes) {
+        public List<DestinationResponseS2C.NodeNetworkInfo> getNodesAsInfo(UUID playerId, Long2IntOpenHashMap posToIndex, ObjectArrayList<Node> nodes) {
             List<DestinationResponseS2C.NodeNetworkInfo> list = new ArrayList<>(nodePositions.size());
             LongIterator it = nodePositions.iterator();
             while (it.hasNext()) {
                 long pos = it.nextLong();
                 int index = posToIndex.getOrDefault(pos, -1);
                 if (index != -1) {
-                    Node node = allNodes.get(index);
+                    Node node = nodes.get(index);
                     List<BlockPos> connections = new ArrayList<>(node.getConnectedNodes().size());
                     for (long conn : node.getConnectedNodes()) {
                         connections.add(BlockPos.of(conn));
                     }
-                    list.add(new DestinationResponseS2C.NodeNetworkInfo(BlockPos.of(pos), node.getClearance(), connections));
+                    list.add(new DestinationResponseS2C.NodeNetworkInfo(BlockPos.of(pos), node.getClearance(), connections, node.hasVisited(playerId)));
                 } else {
-                    list.add(new DestinationResponseS2C.NodeNetworkInfo(BlockPos.of(pos), 0, Collections.emptyList()));
+                    list.add(new DestinationResponseS2C.NodeNetworkInfo(BlockPos.of(pos), 0, Collections.emptyList(), false));
                 }
             }
             return list;
@@ -231,8 +232,8 @@ public final class PathGraph {
         });
     }
 
-    public void createConnectedPath(List<Node.NodeData> pathData) {
-        if (pathData == null || pathData.size() < 2) return;
+    public List<Node> createConnectedPath(List<Node.NodeData> pathData) {
+        if (pathData == null || pathData.size() < 2) return List.of();
 
         List<Node> pathNodes = new ArrayList<>(pathData.size());
         for (Node.NodeData currentData : pathData) {
@@ -272,6 +273,8 @@ public final class PathGraph {
         for (Node node : pathNodes) {
             dirtyNodePositions.add(node.getPos());
         }
+
+        return pathNodes;
     }
 
     public void createOrUpdatePseudoNetwork(UUID pseudoNetworkId, List<Node.NodeData> tempNodes) {
@@ -542,6 +545,35 @@ public final class PathGraph {
         return Optional.ofNullable(bestNode);
     }
 
+    public boolean hasVisitedPath(UUID playerId, Node start, Node end) {
+        if (!ClientConfigCache.requireWalkedPath) return true;
+        if (start.getPos() == end.getPos()) return true;
+        if (!start.hasVisited(playerId) || !end.hasVisited(playerId)) return false;
+
+        Set<Long> visited = new HashSet<>();
+        Queue<Node> queue = new ArrayDeque<>();
+
+        visited.add(start.getPos());
+        queue.add(start);
+
+        while (!queue.isEmpty()) {
+            Node current = queue.poll();
+            if (current.getPos() == end.getPos()) return true;
+
+            for (long neighborPos : current.getConnectedNodes()) {
+                if (!visited.contains(neighborPos)) {
+                    getNodeAt(BlockPos.of(neighborPos)).ifPresent(neighbor -> {
+                        if (neighbor.hasVisited(playerId)) {
+                            visited.add(neighborPos);
+                            queue.add(neighbor);
+                        }
+                    });
+                }
+            }
+        }
+        return false;
+    }
+
     public List<Node> getNetwork(Node start) {
         List<Node> network = new ArrayList<>();
         LongOpenHashSet visited = new LongOpenHashSet();
@@ -595,6 +627,7 @@ public final class PathGraph {
         return cache.destinationNodes().stream()
                 .filter(node -> node.getPos() != sourceNode.getPos())
                 .filter(node -> node.isAccessibleBy(playerId))
+                .filter(node -> !ClientConfigCache.requireWalkedPath || hasVisitedPath(playerId, sourceNode, node))
                 .toList();
     }
 
@@ -800,8 +833,12 @@ public final class PathGraph {
     }
     //endregion
 
+    public List<DestinationResponseS2C.NodeNetworkInfo> getNodesAsInfo(UUID playerId, NetworkCache cache) {
+        return cache.getNodesAsInfo(playerId, posToIndex, nodes);
+    }
+
     public List<DestinationResponseS2C.NodeNetworkInfo> getNodesAsInfo(NetworkCache cache) {
-        return cache.getNodesAsInfo(this.posToIndex, this.nodes);
+        return cache.getNodesAsInfo(null, posToIndex, nodes);
     }
 
     public List<DestinationResponseS2C.DestinationInfo> getNodesAsDestinationInfo(List<net.rasanovum.viaromana.path.Node> nodes, BlockPos origin) {

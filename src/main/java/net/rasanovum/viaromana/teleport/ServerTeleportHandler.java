@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -82,17 +83,30 @@ public class ServerTeleportHandler {
         ServerLevel level = player.serverLevel();
         PathGraph graph = PathGraph.getInstance(level);
 
-        graph.getNodeAt(packet.destinationPos()).ifPresent(targetNode -> {
-            activeTeleports.put(player.getUUID(), targetNode);
-            teleportStartTimes.put(player.getUUID(), level.getGameTime());
-            
-            PacketBroadcaster.S2C.sendToPlayer(new TeleportFadeS2C(
-                FADE_UP_TICKS,
-                HOLD_TICKS,
-                FADE_DOWN_TICKS,
-                FOOTSTEP_INTERVAL
-            ), player);
-        });
+        Optional<Node> targetNodeOpt = graph.getNodeAt(packet.destinationPos());
+        if (targetNodeOpt.isEmpty()) return;
+        Node targetNode = targetNodeOpt.get();
+
+        if (packet.originSignPos() != null) {
+            Optional<Node> originNodeOpt = graph.getNodeBySignPos(packet.originSignPos());
+            if (originNodeOpt.isPresent()) {
+                Node originNode = originNodeOpt.get();
+                if (!graph.hasVisitedPath(player.getUUID(), originNode, targetNode)) {
+                    player.displayClientMessage(Component.translatable("message.via_romana.path_not_walked"), true);
+                    return;
+                }
+            }
+        }
+
+        activeTeleports.put(player.getUUID(), targetNode);
+        teleportStartTimes.put(player.getUUID(), level.getGameTime());
+        
+        PacketBroadcaster.S2C.sendToPlayer(new TeleportFadeS2C(
+            FADE_UP_TICKS,
+            HOLD_TICKS,
+            FADE_DOWN_TICKS,
+            FOOTSTEP_INTERVAL
+        ), player);
     }
 
     private static void executeTeleportation(ServerPlayer player, Node targetNode) {
