@@ -44,7 +44,7 @@ public record DestinationRequestC2S(BlockPos sourceSignPos) implements AbstractP
             PathGraph.NetworkCache cache = graph.getNetworkCache(sourceNode);
 
             List<DestinationResponseS2C.DestinationInfo> destInfos = graph.getNodesAsDestinationInfo(destinations, sourceNode.getBlockPos());
-            List<DestinationResponseS2C.NodeNetworkInfo> networkInfos = graph.getNodesAsInfo(cache);
+            List<DestinationResponseS2C.NodeNetworkInfo> networkInfos = graph.getNodesAsInfo(serverPlayer.getUUID(), cache);
 
             DestinationResponseS2C response = new DestinationResponseS2C(
                 destInfos,

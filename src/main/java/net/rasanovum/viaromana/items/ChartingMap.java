@@ -55,7 +55,7 @@ public class ChartingMap extends Item {
                     PathGraph.NetworkCache networkCache = graph.getNetworkCacheForNode(node);
 
                     List<net.rasanovum.viaromana.path.Node> destinations = graph.getCachedTeleportDestinationsFor(serverPlayer.getUUID(), node);
-                    List<DestinationResponseS2C.NodeNetworkInfo> networkInfos = graph.getNodesAsInfo(networkCache);
+                    List<DestinationResponseS2C.NodeNetworkInfo> networkInfos = graph.getNodesAsInfo(serverPlayer.getUUID(), networkCache);
 
                     DestinationResponseS2C responsePacket = new DestinationResponseS2C(
                             graph.getNodesAsDestinationInfo(destinations, node.getBlockPos()),
